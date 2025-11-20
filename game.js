@@ -14,11 +14,11 @@ if (window.Telegram && window.Telegram.WebApp) {
 // --- Constants ---
 const CANVAS_WIDTH = 1280;
 const CANVAS_HEIGHT = 720;
-const GRAVITY = 0.6;
+const GRAVITY = 3.0;  // Увеличено в 5 раз (было 0.6)
 const FRICTION = 0.8;
-const PLAYER_SPEED = 0.8;
-const PLAYER_MAX_SPEED = 7;
-const JUMP_FORCE = 16;
+const PLAYER_SPEED = 4.0;  // Увеличено в 5 раз (было 0.8)
+const PLAYER_MAX_SPEED = 35;  // Увеличено в 5 раз (было 7)
+const JUMP_FORCE = 25;  // Увеличено примерно в 1.5 раза для баланса
 const TILE_SIZE = 40;
 
 // --- Input Handling ---
@@ -127,7 +127,7 @@ class Player extends Entity {
         this.isGrounded = false;
         this.facingRight = true;
         this.image = new Image();
-        this.image.src = 'C:/Users/98fro/.gemini/antigravity/brain/df6b74b3-c6e7-477e-b2a2-27e8b6041a0d/uploaded_image_0_1763646896896.png';
+        this.image.src = 'assets/player.png';
         this.imageLoaded = false;
         this.image.onload = () => {
             this.imageLoaded = true;
@@ -312,7 +312,7 @@ class Enemy extends Entity {
         this.speed = 2;
         this.direction = 1;
         this.image = new Image();
-        this.image.src = 'C:/Users/98fro/.gemini/antigravity/brain/df6b74b3-c6e7-477e-b2a2-27e8b6041a0d/vodka_bottle_transparent_1763647808875.png';
+        this.image.src = 'assets/enemy.png';
         this.imageLoaded = false;
         this.image.onload = () => {
             this.imageLoaded = true;
