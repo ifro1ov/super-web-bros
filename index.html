@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Super Web Bros</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="ui-layer">
+            <!-- Start Screen -->
+            <div id="start-screen" class="screen active">
+                <h1 class="title">SUPER WEB BROS</h1>
+                <p class="subtitle">Select Difficulty</p>
+                <div class="difficulty-buttons">
+                    <button class="btn" data-difficulty="easy">EASY</button>
+                    <button class="btn" data-difficulty="medium">MEDIUM</button>
+                    <button class="btn" data-difficulty="hard">HARD</button>
+                </div>
+                <div class="controls-hint">
+                    <div class="key-group">
+                        <span class="key">W</span>
+                        <span class="key">A</span>
+                        <span class="key">S</span>
+                        <span class="key">D</span>
+                        <span>MOVE</span>
+                    </div>
+                    <div class="key-group">
+                        <span class="key wide">SPACE</span>
+                        <span>JUMP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="game-over-screen" class="screen">
+                <h1 class="title">GAME OVER</h1>
+                <p id="final-score" class="subtitle">Score: 0</p>
+                <button class="btn" id="restart-btn">TRY AGAIN</button>
+                <button class="btn secondary" id="menu-btn">MAIN MENU</button>
+            </div>
+
+            <!-- Victory Screen -->
+            <div id="victory-screen" class="screen">
+                <h1 class="title">LEVEL CLEARED!</h1>
+                <p class="subtitle">You are awesome!</p>
+                <button class="btn" id="next-level-btn">NEXT LEVEL</button>
+                <button class="btn secondary" id="victory-menu-btn">MAIN MENU</button>
+            </div>
+
+            <!-- HUD -->
+            <div id="hud" class="hidden">
+                <div class="hud-item">SCORE: <span id="score-display">0</span></div>
+                <div class="hud-item">LIVES: <span id="lives-display">3</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div id="mobile-controls" class="mobile-controls">
+        <div class="control-left">
+            <button class="control-btn" id="btn-left">◄</button>
+        </div>
+        <div class="control-center">
+            <button class="control-btn jump-btn" id="btn-jump">JUMP</button>
+        </div>
+        <div class="control-right">
+            <button class="control-btn" id="btn-right">►</button>
+        </div>
+    </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+
+</html>
