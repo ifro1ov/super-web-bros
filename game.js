@@ -109,75 +109,54 @@ class InputHandler {
     setupAccelerometer() {
         // Permission request is handled in requestPermission() called on user interaction
         if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', (e) => {
-                this.handleOrientation(e);
-            });
         }
     }
+}
 
-    handleOrientation(e) {
-        // gamma: left/right tilt (-90 to 90)
-        this.tiltX = e.gamma || 0;
-
-        // Auto-move based on tilt (when controls hidden or in landscape)
-        if (!this.controlsVisible || window.innerWidth > window.innerHeight) {
-            if (this.tiltX > 10) { // Sensitivity threshold
-                this.keys.d = true;
-                this.keys.a = false;
-            } else if (this.tiltX < -10) {
-                this.keys.a = true;
-                this.keys.d = false;
-            } else {
-                this.keys.a = false;
-                this.keys.d = false;
-            }
-        }
-    }
-
-    requestPermission() {
-        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-            DeviceOrientationEvent.requestPermission()
-                .then(permissionState => {
-                    if (permissionState === 'granted') {
-                        window.addEventListener('deviceorientation', (e) => {
-                            this.handleOrientation(e);
-                        });
-                    }
-                })
-                .catch(console.error);
-        }
-    }
-
-    setupTapToJump() {
-        const canvas = document.getElementById('gameCanvas');
-        if (canvas) {
-            canvas.addEventListener('touchstart', (e) => {
-                // Ignore if touching buttons area (bottom 20%)
-                const touch = e.touches[0];
-                const rect = canvas.getBoundingClientRect();
-                const y = touch.clientY - rect.top;
-
-                // Only jump if tapping upper 80% of screen (not on buttons)
-                if (y < rect.height * 0.8) {
-                    this.keys.space = true;
-                    setTimeout(() => this.keys.space = false, 100);
+requestPermission() {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+            .then(permissionState => {
+                if (permissionState === 'granted') {
+                    window.addEventListener('deviceorientation', (e) => {
+                        this.handleOrientation(e);
+                    });
                 }
-            });
-        }
+            })
+            .catch(console.error);
     }
+}
 
-    setupToggleButton() {
-        const toggleBtn = document.getElementById('toggle-controls');
-        const controls = document.getElementById('mobile-controls');
+setupTapToJump() {
+    const canvas = document.getElementById('gameCanvas');
+    if (canvas) {
+        canvas.addEventListener('touchstart', (e) => {
+            // Ignore if touching buttons area (bottom 20%)
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const y = touch.clientY - rect.top;
 
-        if (toggleBtn && controls) {
-            toggleBtn.addEventListener('click', () => {
-                this.controlsVisible = !this.controlsVisible;
-                controls.classList.toggle('hidden');
-                toggleBtn.textContent = this.controlsVisible ? '👁️' : '👁️‍🗨️';
-            });
-        }
+            // Only jump if tapping upper 80% of screen (not on buttons)
+            if (y < rect.height * 0.8) {
+                this.keys.space = true;
+                setTimeout(() => this.keys.space = false, 100);
+            }
+        });
     }
+}
+
+setupToggleButton() {
+    const toggleBtn = document.getElementById('toggle-controls');
+    const controls = document.getElementById('mobile-controls');
+
+    if (toggleBtn && controls) {
+        toggleBtn.addEventListener('click', () => {
+            this.controlsVisible = !this.controlsVisible;
+            controls.classList.toggle('hidden');
+            toggleBtn.textContent = this.controlsVisible ? '👁️' : '👁️‍🗨️';
+        });
+    }
+}
 }
 
 // --- Game Entities ---
@@ -530,18 +509,6 @@ class Game {
             this.ui.victory.classList.remove('active');
             this.ui.start.classList.add('active');
         });
-    }
-
-    startGame(difficulty) {
-        // Request accelerometer permission on iOS
-        this.input.requestPermission();
-
-        this.ui.start.classList.remove('active');
-        this.ui.hud.classList.remove('hidden');
-        this.isRunning = true;
-        this.score = 0;
-        this.loadLevel(difficulty);
-        this.loop();
     }
 
     gameOver() {
