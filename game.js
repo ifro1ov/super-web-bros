@@ -14,11 +14,11 @@ if (window.Telegram && window.Telegram.WebApp) {
 // --- Constants ---
 const CANVAS_WIDTH = 1280;
 const CANVAS_HEIGHT = 720;
-const GRAVITY = 3.0;  // Увеличено в 5 раз (было 0.6)
+const GRAVITY = 3.0;  // Increased 5x
 const FRICTION = 0.8;
-const PLAYER_SPEED = 4.0;  // Увеличено в 5 раз (было 0.8)
-const PLAYER_MAX_SPEED = 35;  // Увеличено в 5 раз (было 7)
-const JUMP_FORCE = 25;  // Увеличено примерно в 1.5 раза для баланса
+const PLAYER_SPEED = 4.0;  // Increased 5x
+const PLAYER_MAX_SPEED = 35;  // Increased 5x
+const JUMP_FORCE = 25;
 const TILE_SIZE = 40;
 
 // --- Input Handling ---
@@ -107,25 +107,44 @@ class InputHandler {
     }
 
     setupAccelerometer() {
+        // Permission request is handled in requestPermission() called on user interaction
         if (window.DeviceOrientationEvent) {
             window.addEventListener('deviceorientation', (e) => {
-                // gamma: left/right tilt (-90 to 90)
-                this.tiltX = e.gamma || 0;
-
-                // Auto-move based on tilt (when controls hidden or in landscape)
-                if (!this.controlsVisible || window.innerWidth > window.innerHeight) {
-                    if (this.tiltX > 15) {
-                        this.keys.d = true;
-                        this.keys.a = false;
-                    } else if (this.tiltX < -15) {
-                        this.keys.a = true;
-                        this.keys.d = false;
-                    } else {
-                        this.keys.a = false;
-                        this.keys.d = false;
-                    }
-                }
+                this.handleOrientation(e);
             });
+        }
+    }
+
+    handleOrientation(e) {
+        // gamma: left/right tilt (-90 to 90)
+        this.tiltX = e.gamma || 0;
+
+        // Auto-move based on tilt (when controls hidden or in landscape)
+        if (!this.controlsVisible || window.innerWidth > window.innerHeight) {
+            if (this.tiltX > 10) { // Sensitivity threshold
+                this.keys.d = true;
+                this.keys.a = false;
+            } else if (this.tiltX < -10) {
+                this.keys.a = true;
+                this.keys.d = false;
+            } else {
+                this.keys.a = false;
+                this.keys.d = false;
+            }
+        }
+    }
+
+    requestPermission() {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(permissionState => {
+                    if (permissionState === 'granted') {
+                        window.addEventListener('deviceorientation', (e) => {
+                            this.handleOrientation(e);
+                        });
+                    }
+                })
+                .catch(console.error);
         }
     }
 
@@ -133,7 +152,7 @@ class InputHandler {
         const canvas = document.getElementById('gameCanvas');
         if (canvas) {
             canvas.addEventListener('touchstart', (e) => {
-                // Ignore if touching buttons
+                // Ignore if touching buttons area (bottom 20%)
                 const touch = e.touches[0];
                 const rect = canvas.getBoundingClientRect();
                 const y = touch.clientY - rect.top;
@@ -514,6 +533,9 @@ class Game {
     }
 
     startGame(difficulty) {
+        // Request accelerometer permission on iOS
+        this.input.requestPermission();
+
         this.ui.start.classList.remove('active');
         this.ui.hud.classList.remove('hidden');
         this.isRunning = true;
@@ -548,33 +570,26 @@ class Game {
         let currentX = 600;
         const levelLength = difficulty === 'easy' ? 3000 : difficulty === 'medium' ? 5000 : 8000;
         const maxGapSize = difficulty === 'easy' ? 150 : difficulty === 'medium' ? 200 : 250;
-        const maxJumpHeight = JUMP_FORCE * JUMP_FORCE / (2 * GRAVITY); // Physics calculation
-        const platformHeightVar = difficulty === 'easy' ? 0 : 120;
 
         // Procedural Generation with guaranteed passability
-        let lastPlatformY = CANVAS_HEIGHT - 60;
         while (currentX < levelLength) {
-            const width = Math.random() * 150 + 150; // Wider platforms (150-300)
+            const gapSize = Math.random() * (maxGapSize - 50) + 50;
+            const platformWidth = Math.random() * 300 + 100;
 
-            // Calculate safe height difference
-            const maxHeightDiff = Math.min(platformHeightVar, maxJumpHeight * 0.6);
-            const heightDiff = (Math.random() - 0.5) * maxHeightDiff;
-            const y = Math.max(CANVAS_HEIGHT - 400, Math.min(CANVAS_HEIGHT - 100, lastPlatformY + heightDiff));
+            // Adjusted platform height: between 20% and 50% from bottom (higher up)
+            // Ground is at CANVAS_HEIGHT - 60
+            const minHeight = CANVAS_HEIGHT - 150; // Low platform
+            const maxHeight = CANVAS_HEIGHT - 350; // High platform
+            const platformY = Math.random() * (minHeight - maxHeight) + maxHeight;
 
-            // Calculate gap based on height difference (higher = smaller gap)
-            const heightFactor = Math.abs(y - lastPlatformY) / 100;
-            const gapSize = Math.max(80, maxGapSize - heightFactor * 50);
+            this.platforms.push(new Platform(currentX + gapSize, platformY, platformWidth, 40)); // Thinner platforms
 
-            // Always add platform (no random gaps that could be impassable)
-            this.platforms.push(new Platform(currentX, y, width, 40));
-
-            // Add enemy
-            if (Math.random() > (difficulty === 'easy' ? 0.7 : 0.5)) {
-                this.enemies.push(new Enemy(currentX + 20, y - 50, width - 60));
+            // Add enemies
+            if (Math.random() < 0.4) {
+                this.enemies.push(new Enemy(currentX + gapSize + platformWidth / 2, platformY - 50, platformWidth));
             }
 
-            lastPlatformY = y;
-            currentX += width + gapSize;
+            currentX += gapSize + platformWidth;
         }
 
         this.goal = new Goal(levelLength + 200, CANVAS_HEIGHT - 180);
