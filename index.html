@@ -17,6 +17,15 @@
     <div id="game-container">
         <canvas id="gameCanvas"></canvas>
 
+        <!-- Landscape Warning -->
+        <div id="landscape-warning" class="landscape-warning">
+            <div class="warning-content">
+                <div class="rotate-icon">📱 ↻</div>
+                <h2>Поверните телефон</h2>
+                <p>Для лучшего игрового опыта поверните устройство горизонтально</p>
+            </div>
+        </div>
+
         <div id="ui-layer">
             <!-- Start Screen -->
             <div id="start-screen" class="screen active">
@@ -64,20 +73,24 @@
                 <div class="hud-item">LIVES: <span id="lives-display">3</span></div>
             </div>
         </div>
-    </div>
 
-    <!-- Mobile Touch Controls -->
-    <div id="mobile-controls" class="mobile-controls">
-        <div class="control-left">
-            <button class="control-btn" id="btn-left">◄</button>
+        <!-- Mobile Touch Controls -->
+        <div id="mobile-controls" class="mobile-controls">
+            <div class="control-left">
+                <button class="control-btn" id="btn-left">◄</button>
+            </div>
+            <div class="control-center">
+                <button class="control-btn jump-btn" id="btn-jump">JUMP</button>
+            </div>
+            <div class="control-right">
+                <button class="control-btn" id="btn-right">►</button>
+            </div>
         </div>
-        <div class="control-center">
-            <button class="control-btn jump-btn" id="btn-jump">JUMP</button>
-        </div>
-        <div class="control-right">
-            <button class="control-btn" id="btn-right">►</button>
-        </div>
-    </div>
+
+        <!-- Toggle Controls Button -->
+        <button id="toggle-controls" class="toggle-controls-btn" title="Показать/скрыть управление">
+            👁️
+        </button>
     </div>
     <script src="game.js"></script>
 </body>

@@ -32,6 +32,9 @@ class InputHandler {
             space: false
         };
 
+        this.tiltX = 0;
+        this.controlsVisible = true;
+
         // Keyboard controls
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
@@ -54,8 +57,14 @@ class InputHandler {
             if (key === 'd') this.keys.d = false;
         });
 
-        // Touch controls for mobile
+        // Touch controls
         this.setupTouchControls();
+        // Accelerometer
+        this.setupAccelerometer();
+        // Tap to jump
+        this.setupTapToJump();
+        // Toggle button
+        this.setupToggleButton();
     }
 
     setupTouchControls() {
@@ -96,6 +105,60 @@ class InputHandler {
             });
         }
     }
+
+    setupAccelerometer() {
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', (e) => {
+                // gamma: left/right tilt (-90 to 90)
+                this.tiltX = e.gamma || 0;
+
+                // Auto-move based on tilt (when controls hidden or in landscape)
+                if (!this.controlsVisible || window.innerWidth > window.innerHeight) {
+                    if (this.tiltX > 15) {
+                        this.keys.d = true;
+                        this.keys.a = false;
+                    } else if (this.tiltX < -15) {
+                        this.keys.a = true;
+                        this.keys.d = false;
+                    } else {
+                        this.keys.a = false;
+                        this.keys.d = false;
+                    }
+                }
+            });
+        }
+    }
+
+    setupTapToJump() {
+        const canvas = document.getElementById('gameCanvas');
+        if (canvas) {
+            canvas.addEventListener('touchstart', (e) => {
+                // Ignore if touching buttons
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const y = touch.clientY - rect.top;
+
+                // Only jump if tapping upper 80% of screen (not on buttons)
+                if (y < rect.height * 0.8) {
+                    this.keys.space = true;
+                    setTimeout(() => this.keys.space = false, 100);
+                }
+            });
+        }
+    }
+
+    setupToggleButton() {
+        const toggleBtn = document.getElementById('toggle-controls');
+        const controls = document.getElementById('mobile-controls');
+
+        if (toggleBtn && controls) {
+            toggleBtn.addEventListener('click', () => {
+                this.controlsVisible = !this.controlsVisible;
+                controls.classList.toggle('hidden');
+                toggleBtn.textContent = this.controlsVisible ? '👁️' : '👁️‍🗨️';
+            });
+        }
+    }
 }
 
 // --- Game Entities ---
@@ -120,7 +183,10 @@ class Entity {
 
 class Player extends Entity {
     constructor(game) {
-        super(100, 100, 50, 70, '#FF4D4D'); // Red player
+        // Size as % of canvas height
+        const height = CANVAS_HEIGHT * 0.11; // 11% of screen height
+        const width = height * 0.7; // Maintain aspect ratio
+        super(100, 100, width, height, '#FF4D4D');
         this.game = game;
         this.velX = 0;
         this.velY = 0;
@@ -306,7 +372,10 @@ class Platform extends Entity {
 
 class Enemy extends Entity {
     constructor(x, y, range) {
-        super(x, y, 30, 50, '#8B0000'); // Dark Red
+        // Size as % of canvas height  
+        const height = CANVAS_HEIGHT * 0.08; // 8% of screen height
+        const width = height * 0.6; // Maintain aspect ratio
+        super(x, y, width, height, '#8B0000');
         this.startX = x;
         this.range = range;
         this.speed = 2;
